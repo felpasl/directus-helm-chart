@@ -34,7 +34,7 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            {{- if or (eq .Values.ingress.enabled true) (not .Values.publicUrl) }}
+            {{- if and (eq .Values.ingress.enabled true) (not .Values.publicUrl) }}
             - name: PUBLIC_URL
               value: http{{ if .Values.ingress.tls }}s{{ end }}://{{(index .Values.ingress.hosts 0).host }}
             {{- end }}
