@@ -34,9 +34,13 @@ spec:
           image: "{{ .Values.image.repository }}:{{ .Values.image.tag | default .Chart.AppVersion }}"
           imagePullPolicy: {{ .Values.image.pullPolicy }}
           env:
-            {{- if .Values.ingress.enabled }}
+            {{- if or (eq .Values.ingress.enabled true) (not .Values.publicUrl) }}
             - name: PUBLIC_URL
               value: http{{ if .Values.ingress.tls }}s{{ end }}://{{(index .Values.ingress.hosts 0).host }}
+            {{- end }}
+            {{- if .Values.publicUrl }}
+            - name: PUBLIC_URL
+              value: {{ .Values.publicUrl }}
             {{- end }}
             {{- if .Values.extraEnvVars }}
             {{- tpl (toYaml .Values.extraEnvVars) $ | nindent 12 }}
@@ -47,11 +51,11 @@ spec:
               protocol: TCP
           livenessProbe:
             httpGet:
-              path: /
+              path: /server/health
               port: http
           readinessProbe:
             httpGet:
-              path: /
+              path: /server/health
               port: http
           resources:
             {{- toYaml .Values.resources | nindent 12 }}
